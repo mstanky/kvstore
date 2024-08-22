@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package kvstore;
+
+// option go_package = "github.com/username/project/kvstore";
+
+// KeyValueStore defines the gRPC service
+service KeyValueStore {
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Set(SetRequest) returns (SetResponse);
+}
+
+// GetRequest is the request message for retrieving a value
+message GetRequest {
+  string key = 1;
+}
+
+// GetResponse is the response message containing the value
+message GetResponse {
+  string value = 1;
+  bool found = 2;
+}
+
+// SetRequest is the request message for storing a key-value pair
+message SetRequest {
+  string key = 1;
+  string value = 2;
+}
+
+// SetResponse is the response message for storing a key-value pair
+message SetResponse {
+  bool success = 1;
+}
