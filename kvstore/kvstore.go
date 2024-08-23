@@ -1,6 +1,10 @@
 package kvstore
 
-import "sync"
+import (
+	"encoding/json"
+	"os"
+	"sync"
+)
 
 // KVStore is a simple in-memory key-value store.
 type KVStore struct {
@@ -29,4 +33,16 @@ func (kv *KVStore) Set(key, value string) {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
 	kv.store[key] = value
+}
+
+func (kv *KVStore) SaveToFile(filename string) error {
+	kv.mu.RLock()
+	defer mu.RUnlock()
+
+	data, err := json.MarshalIndent(kv.store, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(filename, data, 0644)
 }
