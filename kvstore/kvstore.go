@@ -46,3 +46,18 @@ func (kv *KVStore) SaveToFile(filename string) error {
 
 	return os.WriteFile(filename, data, 0644)
 }
+
+func (kv *KVStore) LoadFromFile(filename string) error {
+	kv.mu.Lock()
+	defer kv.mu.Unlock()
+
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	return json.Unmarshal(data, &kv.store)
+}
