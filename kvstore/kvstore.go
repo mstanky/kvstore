@@ -37,7 +37,7 @@ func (kv *KVStore) Set(key, value string) {
 
 func (kv *KVStore) SaveToFile(filename string) error {
 	kv.mu.RLock()
-	defer mu.RUnlock()
+	defer kv.mu.RUnlock()
 
 	data, err := json.MarshalIndent(kv.store, "", "  ")
 	if err != nil {
