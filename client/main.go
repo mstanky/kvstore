@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"time"
@@ -13,6 +14,12 @@ import (
 )
 
 func main() {
+	// Define command-line flags
+	action := flag.String("action", "get", "Action to perform: get or set")
+	key := flag.String("key", "", "Key to set or get")
+	value := flag.String("value", "", "Value to set (only for set action)")
+	flag.Parse()
+
 	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
@@ -25,21 +32,33 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	// Set a key-value pair
-	setResp, err := client.Set(ctx, &kvstore.SetRequest{Key: "example", Value: "Hello, gRPC!"})
-	if err != nil {
-		log.Fatalf("Failed to set key-value: %v", err)
-	}
-	fmt.Printf("Set Response: %v\n", setResp.Success)
+	switch *action {
+	case "set":
+		if *key == "" || *value == "" {
+			log.Fatalf("Key and value must be provided for set action")
+		}
+		setResp, err := client.Set(ctx, &kvstore.SetRequest{Key: *key, Value: *value})
 
-	// Get the value for the key
-	getResp, err := client.Get(ctx, &kvstore.GetRequest{Key: "example"})
-	if err != nil {
-		log.Fatalf("Failed to get value: %v", err)
-	}
-	if getResp.Found {
-		fmt.Printf("Get Response: Key = example, Value = %s\n", getResp.Value)
-	} else {
-		fmt.Println("Key not found")
+		if err != nil {
+			log.Fatalf("Failed to set key-value: %v", err)
+		}
+		fmt.Printf("Set Response: %v\n", setResp.Success)
+
+	case "get":
+		if *key == "" {
+			log.Fatalf("Key must be provided for get action")
+		}
+		getResp, err := client.Get(ctx, &kvstore.GetRequest{Key: *key})
+		if err != nil {
+			log.Fatalf("Failed to get value: %v", err)
+		}
+		if getResp.Found {
+			fmt.Printf("Get Response: Key = %s, Value = %s\n", *key, getResp.Value)
+		} else {
+			fmt.Println("Key not found")
+		}
+
+	default:
+		log.Fatalf("Unknown action: %s. Use 'get' or 'set'.", *action)
 	}
 }

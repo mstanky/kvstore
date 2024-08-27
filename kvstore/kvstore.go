@@ -2,6 +2,7 @@ package kvstore
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"sync"
 )
@@ -33,6 +34,7 @@ func (kv *KVStore) Set(key, value string) {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
 	kv.store[key] = value
+	log.Printf("KVStore: Set key=%s, value=%s\n", key, value)
 }
 
 func (kv *KVStore) SaveToFile(filename string) error {
@@ -43,6 +45,8 @@ func (kv *KVStore) SaveToFile(filename string) error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("Saving data to file %s: %s\n", filename, string(data))
 
 	return os.WriteFile(filename, data, 0644)
 }
@@ -59,5 +63,6 @@ func (kv *KVStore) LoadFromFile(filename string) error {
 		return err
 	}
 
+	log.Printf("Loaded data from file %s\n", filename)
 	return json.Unmarshal(data, &kv.store)
 }
